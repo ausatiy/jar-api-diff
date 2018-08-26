@@ -1,0 +1,3 @@
+include 'test-resources:parseCases'
+include 'test-resources:baseClasses'
+include 'api-diff'

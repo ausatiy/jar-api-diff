@@ -1,0 +1,14 @@
+project(':test-resources:parseCases') {
+  sourceSets {
+      main.kotlin.srcDirs = ['kotlin']
+      main.java.srcDirs = ['java']
+  }
+}
+
+project(':test-resources:baseClasses') {
+  sourceSets {
+      main.kotlin.srcDirs = ['kotlin']
+      main.java.srcDirs = ['java']
+  }
+}
+

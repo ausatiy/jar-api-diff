@@ -1,0 +1,18 @@
+apply plugin: 'application'
+
+dependencies {
+  compile "ru.uskov.apidiff:classesmodel:1.0"
+
+  compile "commons-cli:commons-cli:1.4"
+  compile "org.ow2.asm:asm:6.2.1"
+  compile "org.ow2.asm:asm-util:6.2.1"
+
+  testCompile "org.junit.jupiter:junit-jupiter-api:$junit_version"
+  testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+
+  //TODO may be change type of dependency
+  testCompile project(':test-resources:parseCases')
+}
+
+mainClassName = 'ru.uskov.apicomparator.Launcher'
+defaultTasks 'run'

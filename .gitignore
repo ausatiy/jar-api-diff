@@ -1,0 +1,7 @@
+.gitignore
+.gradle/
+api-diff/build/
+classes-model/.gradle/
+classes-model/build/
+test-resources/parseCases/build/
+
