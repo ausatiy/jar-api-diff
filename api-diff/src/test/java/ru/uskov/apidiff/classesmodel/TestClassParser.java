@@ -17,22 +17,111 @@ public class TestClassParser {
 
     @BeforeClass
     public static void prepare() throws IOException {
-        final ClassParser classParser = new ClassParser();
-        File file = new File("../test-resources/parseCases/build/libs/parseCases.jar");
-        classes = classParser.readClasses(file);
+        Utils.readClasses("../test-resources/parseCases/build/libs/parseCases.jar");
     }
 
     @Test
     public void testPublicClass() throws IOException {
-        ClassInstance publicClass = classes.get("some.packagename.PublicClass");
-        assertNotNull(publicClass);
+        ClassInstance clazz = classes.get("some/packagename/PublicClass");
+        assertNotNull(clazz);
 
-        assertFalse(publicClass.isAbstract());
-        assertFalse(publicClass.isFinal());
-        assertFalse(publicClass.isInterface());
+        assertFalse(clazz.isAbstract());
+        assertFalse(clazz.isFinal());
+        assertFalse(clazz.isInterface());
 
-        assertEquals(Visibility.PUBLIC, publicClass.getVisibility());
-        assertEquals("java.lang.Object", publicClass.getParent());
-        assertEquals(Collections.singleton("java.io.Serializable"), publicClass.getInterfaces());
+        assertEquals(Visibility.PUBLIC, clazz.getVisibility());
+        assertEquals("java/lang/Object", clazz.getParent());
+        assertEquals(Collections.singleton("java/io/Serializable"), clazz.getInterfaces());
     }
+
+    @Test
+    public void testPackageLocalClass() throws IOException {
+        ClassInstance clazz = classes.get("some/packagename/PackageLocalClass");
+        assertNotNull(clazz);
+
+        assertFalse(clazz.isAbstract());
+        assertTrue(clazz.isFinal());
+        assertFalse(clazz.isInterface());
+
+        assertEquals(Visibility.PACKAGE_LOCAL, clazz.getVisibility());
+        assertEquals("java/lang/Object", clazz.getParent());
+        assertEquals(Collections.emptySet(), clazz.getInterfaces());
+    }
+
+    @Test
+    public void testAbstractClass() throws IOException {
+        ClassInstance clazz = classes.get("some/packagename/AbstractClass");
+        assertNotNull(clazz);
+
+        assertTrue(clazz.isAbstract());
+        assertFalse(clazz.isFinal());
+        assertFalse(clazz.isInterface());
+
+        assertEquals(Visibility.PACKAGE_LOCAL, clazz.getVisibility());
+        assertEquals("java/lang/Object", clazz.getParent());
+        assertEquals(Collections.emptySet(), clazz.getInterfaces());
+    }
+
+    @Test
+    public void testPrivateClass() throws IOException {
+        ClassInstance clazz = classes.get("some/packagename/PackageLocalClass$PrivateClass");
+        assertNotNull(clazz);
+
+        assertFalse(clazz.isAbstract());
+        assertFalse(clazz.isFinal());
+        assertFalse(clazz.isInterface());
+
+        assertEquals(Visibility.PRIVATE, clazz.getVisibility());
+        assertEquals("java/lang/Object", clazz.getParent());
+        assertEquals(Collections.emptySet(), clazz.getInterfaces());
+    }
+
+    @Test
+    public void testSomeInterface() throws IOException {
+        ClassInstance clazz = classes.get("some/packagename/SomeInterface");
+        assertNotNull(clazz);
+
+        assertTrue(clazz.isAbstract());
+        assertFalse(clazz.isFinal());
+        assertTrue(clazz.isInterface());
+
+        assertEquals(Visibility.PUBLIC, clazz.getVisibility());
+        assertEquals("java/lang/Object", clazz.getParent());
+        assertEquals(Collections.singleton("java/io/Closeable"), clazz.getInterfaces());
+    }
+
+    @Test
+    public void testInnerClass1() throws IOException {
+        ClassInstance clazz = classes.get("some/packagename/PackageLocalClass$InnerClass");
+        assertNotNull(clazz);
+
+        assertFalse(clazz.isAbstract());
+        assertFalse(clazz.isFinal());
+        assertFalse(clazz.isInterface());
+        assertEquals(Visibility.PUBLIC, clazz.getVisibility());
+    }
+
+    @Test
+    public void testInnerClass2() throws IOException {
+        ClassInstance clazz = classes.get("some/packagename/PackageLocalClass$InnerClass$SecondLevelInnerClass");
+        assertNotNull(clazz);
+
+        assertTrue(clazz.isAbstract());
+        assertFalse(clazz.isFinal());
+        assertFalse(clazz.isInterface());
+        assertEquals(Visibility.PRIVATE, clazz.getVisibility());
+    }
+
+    @Test
+    public void testInnerClass3() throws IOException {
+        ClassInstance clazz = classes.get("some/packagename/PackageLocalClass$InnerClass$SecondLevelInnerClass$ThirdLevelInnerClass");
+        assertNotNull(clazz);
+
+        assertFalse(clazz.isAbstract());
+        assertTrue(clazz.isFinal());
+        assertFalse(clazz.isInterface());
+        assertEquals(Visibility.PRIVATE, clazz.getVisibility());
+    }
+
+
 }

@@ -4,4 +4,9 @@ api-diff/build/
 classes-model/.gradle/
 classes-model/build/
 test-resources/parseCases/build/
-
+api-diff/out/
+classes-model/.idea/
+classes-model/classes-model.iml
+test-resources/baseClasses/build/
+test-resources/build/
+test-resources/parseCases/out/
