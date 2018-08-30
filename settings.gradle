@@ -1,3 +1,4 @@
 include 'test-resources:parseCases'
 include 'test-resources:baseClasses'
+include 'test-resources:renameBaseClasses'
 include 'api-diff'

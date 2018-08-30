@@ -5,6 +5,18 @@ import java.util.*;
 
 public abstract class ClassWithMethods {
 
+    protected void protectedMethod() {
+
+    }
+
+    private void privateMethod() {
+
+    }
+
+    void packageLocalMethod() {
+
+    }
+
     public static void staticMethod() {
 
     }
@@ -23,9 +35,7 @@ public abstract class ClassWithMethods {
         return null;
     }
 
-    public String[] methodWithArrayArguments(int[] a, Object[] b, String[] c, Integer[] d, List<String> e) throws IOException, RuntimeException {
+    public String[] methodWithArrayArguments(int[] a, Object[] b, String[] c, Integer[] d, List<String>[] e) throws IOException, RuntimeException {
         return null;
     }
-
-
 }

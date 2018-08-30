@@ -2,6 +2,7 @@ package ru.uskov.apidiff.parsing;
 
 import ru.uskov.apidiff.classesmodel.ClassInstance;
 import ru.uskov.apidiff.classesmodel.ClassInstanceFactory;
+import ru.uskov.apidiff.objectnaming.ObjectNameMapper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,8 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class ClassParser {
-    private final InstanceFilter filter = new InstanceFilter();
-    //TODO add logging
+    private final ClassInstanceFactory classInstanceFactory;
 
     private final String CLASS_FILE_EXTENSION = ".class";
 
@@ -24,9 +24,13 @@ public class ClassParser {
         return ! fileName.endsWith(CLASS_FILE_EXTENSION);
     }
 
+    public ClassParser(ObjectNameMapper objectNameMapper) {
+        classInstanceFactory = new ClassInstanceFactory(objectNameMapper);
+    }
+
     //TODO javadoc
-    public Map<String, ClassInstance> readClasses(File jarFile) throws IOException {
-        Map<String, ClassInstance> result = new HashMap<>();
+    public Set<ClassInstance> readClasses(File jarFile) throws IOException {
+        Set<ClassInstance> result = new HashSet<>();
         try (InputStream fis = new FileInputStream(jarFile)) {
             try (ZipInputStream zis = new ZipInputStream(fis)) {
                 while (true) {
@@ -37,8 +41,8 @@ public class ClassParser {
                     if (skipFile(nextEntry.getName())) {
                         continue;
                     }
-                    final ClassInstance instance = new ClassInstanceFactory().getClass(zis);
-                    result.put(instance.getName(), instance);
+                    final ClassInstance instance = classInstanceFactory.getClass(zis);
+                    result.add(instance);
                     zis.closeEntry();
                 }
             }

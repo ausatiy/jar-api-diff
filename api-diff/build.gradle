@@ -12,6 +12,9 @@ dependencies {
 
   //TODO may be change type of dependency
   testCompile project(':test-resources:parseCases')
+  testCompile project(':test-resources:baseClasses')
+  testCompile project(':test-resources:renameBaseClasses')
+
 }
 
 mainClassName = 'ru.uskov.apicomparator.Launcher'
