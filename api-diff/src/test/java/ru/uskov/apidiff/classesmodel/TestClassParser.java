@@ -17,7 +17,7 @@ public class TestClassParser {
 
     @BeforeClass
     public static void prepare() throws IOException {
-        Utils.readClasses("../test-resources/parseCases/build/libs/parseCases.jar");
+        classes = Utils.readClasses("../test-resources/parseCases/build/libs/parseCases.jar");
     }
 
     @Test

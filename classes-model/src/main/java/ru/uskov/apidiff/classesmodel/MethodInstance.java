@@ -11,9 +11,13 @@ public interface MethodInstance {
 
     String getName();
 
+    String getReturnType();
+
     boolean isFinal();
 
     boolean isAbstract();
+
+    boolean isStatic();
 
     Visibility getVisibility();
 

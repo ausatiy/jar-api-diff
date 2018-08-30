@@ -17,12 +17,12 @@ public class TestMethods {
 
     @BeforeClass
     public static void prepare() throws IOException {
-        Utils.readClasses("../test-resources/parseCases/build/libs/parseCases.jar");
+        classes = Utils.readClasses("../test-resources/parseCases/build/libs/parseCases.jar");
     }
 
     @Test
     public void testPublicClass() throws IOException {
-        ClassInstance clazz = classes.get("some/packagename/PublicClass");
+        ClassInstance clazz = classes.get("some/packagename/ClassWithMethods");
         assertNotNull(clazz);
 
         assertFalse(clazz.isAbstract());
