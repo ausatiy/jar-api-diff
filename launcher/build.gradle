@@ -1,0 +1,9 @@
+apply plugin: 'application'
+
+dependencies {
+  compile project(':api-diff-core')
+  compile project(':outputs')
+}
+
+mainClassName = 'ru.uskov.apidiff.launcher.Launcher'
+defaultTasks 'run'

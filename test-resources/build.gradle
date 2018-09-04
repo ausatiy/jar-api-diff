@@ -19,3 +19,9 @@ project(':test-resources:renameBaseClasses') {
   }
 }
 
+project(':test-resources:addRmRenameClasses') {
+  sourceSets {
+      main.kotlin.srcDirs = ['kotlin']
+      main.java.srcDirs = ['java']
+  }
+}

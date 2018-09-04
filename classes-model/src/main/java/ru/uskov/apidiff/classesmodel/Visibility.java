@@ -2,8 +2,20 @@ package ru.uskov.apidiff.classesmodel;
 
 import org.objectweb.asm.Opcodes;
 public enum Visibility {
-    PUBLIC, PROTECTED, PACKAGE_LOCAL, PRIVATE;
+    PUBLIC("public"),
+    PROTECTED("protected"),
+    PACKAGE_LOCAL(""),
+    PRIVATE("private");
 
+    private final String description;
+
+    Visibility(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 
     public static Visibility of(int accessFlags) {
         if ((accessFlags & Opcodes.ACC_PUBLIC) != 0) {

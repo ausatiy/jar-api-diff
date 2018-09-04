@@ -1,11 +1,11 @@
 .gitignore
 .gradle/
 .idea/
-api-diff/build/
+api-diff-core/build/
 classes-model/.gradle/
 classes-model/build/
 test-resources/parseCases/build/
-api-diff/out/
+api-diff-core/out/
 classes-model/.idea/
 classes-model/classes-model.iml
 test-resources/baseClasses/build/
