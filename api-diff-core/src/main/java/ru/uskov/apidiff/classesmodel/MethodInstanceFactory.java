@@ -7,17 +7,20 @@ import ru.uskov.apidiff.classesmodel.objectnaming.ObjectNameMapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Factory class for parsing {@link MethodNode} into internal form {@link MethodInstance}
+ */
 public class MethodInstanceFactory {
 
     private final ObjectNameMapper objectNameMapper;
+    private final InstructionInstanceFactory instructionInstanceFactory;
 
-    public MethodInstanceFactory(ObjectNameMapper objectNameMapper) {
+    public MethodInstanceFactory(ObjectNameMapper objectNameMapper, InstructionInstanceFactory instructionInstanceFactory) {
         this.objectNameMapper = objectNameMapper;
+        this.instructionInstanceFactory = instructionInstanceFactory;
     }
 
     public MethodInstance getMethodInstance(MethodNode node) {
-        //TODO annotations and fields are skipped
-        //TODO add parsing source code
         final String[] signatureParts = node.desc.substring(1).split("\\)");
         final List<String> returnType = objectNameMapper.convertArgumentTypes(signatureParts[1]);
         if (returnType.size() != 1) {
@@ -30,8 +33,11 @@ public class MethodInstanceFactory {
                 .isAbstract((node.access & Opcodes.ACC_ABSTRACT) != 0)
                 .isStatic((node.access & Opcodes.ACC_STATIC) != 0)
                 .returnType(returnType.get(0))
-                .addAllExceptions(node.exceptions.stream().map(objectNameMapper::convertClassName).collect(Collectors.toSet()))
+                .addAllExceptions(node.exceptions.stream()
+                        .map(objectNameMapper::convertClassName)
+                        .collect(Collectors.toSet()))
                 .addAllParameters(objectNameMapper.convertArgumentTypes(signatureParts[0]))
+                .addAllInstructions(instructionInstanceFactory.getInstructions(node.instructions))
                 .build();
     }
 }

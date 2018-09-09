@@ -5,7 +5,7 @@ import org.immutables.value.Value;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Value.Immutable
+@Value.Immutable(prehash = true)
 @Value.Style(strictBuilder = true)
 public interface ClassInstance {
     String getName();

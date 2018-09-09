@@ -1,7 +1,6 @@
 package ru.uskov.apidiff.classesmodel;
 
 import ru.uskov.apidiff.classesmodel.objectnaming.ObjectNameMapper;
-import ru.uskov.apidiff.parsing.ClassParser;
 
 import java.io.File;
 import java.io.IOException;

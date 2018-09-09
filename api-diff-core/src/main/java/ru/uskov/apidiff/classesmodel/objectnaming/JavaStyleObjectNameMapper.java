@@ -4,14 +4,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Implementation of {@link ObjectNameMapper} converting class names and method types
+ * into style obtained on .java-files.
+ * E.g.: java/lang/String will be converted into String, but
+ * java/io/InputStream will be converted to java.io.InputStream
+ */
 public class JavaStyleObjectNameMapper implements ObjectNameMapper {
     @Override
     public String convertClassName(String rawClassName) {
+        // May be useful in case of rt.jar: Object has null parent
+        if (rawClassName == null) {
+            return "Object";
+        }
         rawClassName = rawClassName.replaceAll("^java/lang/", "");
         return rawClassName.replace('/', '.');
     }
 
     @Override
+    //TODO consider possibility to replace with org.objectweb.asm.Type
     public List<String> convertArgumentTypes(String rawType) {
         List<String> result = new ArrayList<>();
         final String initialRawType = rawType;
