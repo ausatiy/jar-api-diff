@@ -4,12 +4,13 @@ import ru.uskov.apidiff.classesmodel.ClassInstance;
 import ru.uskov.apidiff.classesmodel.ImmutableClassInstance;
 import ru.uskov.apidiff.classesmodel.ImmutableMethodInstance;
 import ru.uskov.apidiff.classesmodel.MethodInstance;
+import ru.uskov.apidiff.transform.ClassManipulation;
 import ru.uskov.apidiff.transform.TransformOperation;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class RenameClassOperation implements TransformOperation {
+public class RenameClassOperation implements TransformOperation, ClassManipulation {
     private final String from;
     private final String to;
     private final int weight;
@@ -105,5 +106,10 @@ public class RenameClassOperation implements TransformOperation {
     @Override
     public String toString() {
         return String.format("Class \"%s\" was renamed to \"%s\".", from, to);
+    }
+
+    @Override
+    public boolean affectsClass(String name) {
+        return from.equals(name) || to.equals(name);
     }
 }

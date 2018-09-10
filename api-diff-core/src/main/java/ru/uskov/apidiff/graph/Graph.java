@@ -24,12 +24,15 @@ public class Graph {
 
         while (! shellNodes.isEmpty()) {
             final GraphNode currentNode = shellNodes.poll();
-
-            System.out.println(currentNode.getWeight() + "  " + openNodes.size());
             if (currentNode.getApi().equals(newApi)) {
                 return currentNode;
             }
             openNodes.add(currentNode);
+            try {
+                routeHelper.getTransformOperations(currentNode, newApi);
+            } catch (Exception e) {
+                System.out.println(e);
+            }
             for (TransformOperation transformOperation : routeHelper.getTransformOperations(currentNode, newApi)) {
                 GraphNode newNode = currentNode.withTransform(transformOperation);
                 if (! openNodes.contains(newNode)) {
@@ -46,7 +49,6 @@ public class Graph {
                 }
             }
         }
-        //TODO Error: could not find path
-        return null;
+        throw new RuntimeException("Could not find find full list of class modifications.");
     }
 }

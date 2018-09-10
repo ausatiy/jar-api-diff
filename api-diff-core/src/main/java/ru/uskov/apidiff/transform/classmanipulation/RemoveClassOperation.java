@@ -2,13 +2,14 @@ package ru.uskov.apidiff.transform.classmanipulation;
 
 import ru.uskov.apidiff.classesmodel.ClassInstance;
 import ru.uskov.apidiff.classesmodel.MethodInstance;
+import ru.uskov.apidiff.transform.ClassManipulation;
 import ru.uskov.apidiff.transform.TransformOperation;
 
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RemoveClassOperation implements TransformOperation {
+public class RemoveClassOperation implements TransformOperation, ClassManipulation {
     private final String className;
     private final int weight;
     private final Set<ClassInstance> newApi;
@@ -42,5 +43,10 @@ public class RemoveClassOperation implements TransformOperation {
     @Override
     public String toString() {
         return String.format("Class \"%s\" was removed.", className);
+    }
+
+    @Override
+    public boolean affectsClass(String name) {
+        return className.equals(name);
     }
 }

@@ -17,4 +17,20 @@ public class Weights {
     public int getChangeClassAttributes() {
         return 100;
     }
+
+    public int getRemoveMethodWeight() {
+        return 100;
+    }
+
+    public int getAddMethodWeight() {
+        return 100;
+    }
+
+    public int getRenameMethodWeight() {
+        return 10;
+    }
+
+    public int getChangeMethodAttributes() {
+        return 10;
+    }
 }

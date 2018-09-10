@@ -1,6 +1,8 @@
 package ru.uskov.apidiff.transform.attributemanipulation;
 
 import ru.uskov.apidiff.classesmodel.ClassInstance;
+import ru.uskov.apidiff.classesmodel.ImmutableClassInstance;
+import ru.uskov.apidiff.classesmodel.ImmutableInstructionInstance;
 import ru.uskov.apidiff.classesmodel.MethodInstance;
 import ru.uskov.apidiff.transform.TransformOperation;
 
@@ -19,12 +21,14 @@ public class ChangeClassAttributesOperation implements TransformOperation {
 
     public ChangeClassAttributesOperation(Set<ClassInstance> oldApi, ClassInstance newClass, int weight) {
         this.weight = weight;
-        this.destinationClass = newClass;
-        Optional<ClassInstance> sourceClass = oldApi.stream().filter(x -> x.getName().equals(newClass.getName())).findAny();
+        final String className = newClass.getName();
+        Optional<ClassInstance> sourceClass = oldApi.stream().filter(x -> x.getName().equals(className)).findAny();
         if (! sourceClass.isPresent()) {
             throw new IllegalStateException();//TODO
         }
         this.sourceClass = sourceClass.get();
+        newClass = ImmutableClassInstance.copyOf(newClass).withMethods(this.sourceClass.getMethods());
+        this.destinationClass = newClass;
         this.newApi = new HashSet<>(oldApi);
         this.newApi.remove(this.sourceClass);
         this.newApi.add(newClass);
