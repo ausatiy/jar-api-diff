@@ -1,7 +1,0 @@
-
-dependencies {
-  compile project(':api-diff-core')
-
-  testCompile "org.junit.jupiter:junit-jupiter-api:$junit_version"
-  testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-}

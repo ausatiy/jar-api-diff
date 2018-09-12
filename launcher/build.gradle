@@ -2,7 +2,11 @@ apply plugin: 'application'
 
 dependencies {
   compile project(':api-diff-core')
-  compile project(':outputs')
+
+  testCompile "org.junit.jupiter:junit-jupiter-api:$junit_version"
+  testCompile project(':test-resources:demoFrom')
+  testCompile project(':test-resources:demoTo')
+  testCompile 'org.hamcrest:hamcrest-library:1.3'
 }
 
 mainClassName = 'ru.uskov.apidiff.launcher.Launcher'

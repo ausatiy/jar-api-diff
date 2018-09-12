@@ -14,11 +14,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TestMethods {
     private static Map<String, MethodInstance> methods;
+    private static ClassInstance clazz;
+
 
     @BeforeClass
     public static void prepare() throws IOException {
-        Map<String, ClassInstance> classes = Utils.readClasses("../test-resources/parseCases/build/libs/parseCases.jar", new JavaStyleObjectNameMapper());
-        ClassInstance clazz = classes.get("some.packagename.ClassWithMethods");
+        Api classes = Utils.readClasses("../test-resources/parseCases/build/libs/parseCases.jar", new JavaStyleObjectNameMapper());
+        clazz = classes.get("some.packagename.ClassWithMethods");
         methods = clazz.getMethods().stream().collect(Collectors.toMap(MethodInstance::getName, Function.identity()));
     }
 
@@ -128,5 +130,24 @@ public class TestMethods {
         assertEquals(false, staticMethod.isAbstract());
         assertEquals(false, staticMethod.isFinal());
         assertEquals(false, staticMethod.isStatic());
+    }
+
+    // Here we test comparator and signature at once. If comparator does not work we get signatures in wrong order
+    @Test
+    public void testSignatureAndSort() {
+        String signatures = clazz.getMethods().stream()
+                .sorted()
+                .map(x -> x.getSignature())
+                .collect(Collectors.joining(";\n"));
+        assertEquals("public void <init>();\n" +
+                "public abstract void abstractMethod();\n" +
+                "public final void finalMethod();\n" +
+                "public String methodWithArguments(int,Object,String,Integer,java.util.List) throws RuntimeException,java.io.IOException;\n" +
+                "public String[] methodWithArrayArguments(int[],Object[],String[],Integer[],java.util.List[]) throws RuntimeException,java.io.IOException;\n" +
+                "void packageLocalMethod();\n" +
+                "private void privateMethod();\n" +
+                "protected void protectedMethod();\n" +
+                "public static final void staticFinalMethod();\n" +
+                "public static void staticMethod()", signatures);
     }
 }

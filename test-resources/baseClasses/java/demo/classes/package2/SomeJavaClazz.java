@@ -1,6 +1,6 @@
-package package2;
+package demo.classes.package2;
 
-final class SomeJavaClazz2 {
+public class SomeJavaClazz {
     public int publicField;
     public static Integer publicStaticField;
 
@@ -12,7 +12,7 @@ final class SomeJavaClazz2 {
         System.out.printf(arg);
     }
 
-    public void someMethod(SomeJavaClazz2 arg) {
+    public void someMethod(SomeJavaClazz arg) {
 
     }
 

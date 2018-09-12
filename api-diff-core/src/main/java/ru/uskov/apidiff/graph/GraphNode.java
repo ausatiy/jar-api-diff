@@ -1,26 +1,30 @@
 package ru.uskov.apidiff.graph;
 
 import org.jetbrains.annotations.NotNull;
+import ru.uskov.apidiff.classesmodel.Api;
 import ru.uskov.apidiff.classesmodel.ClassInstance;
 import ru.uskov.apidiff.transform.TransformOperation;
 
 import java.util.*;
 
-//TODO document that nodes are equal if they are representing the same node.
-// the route does not influence on equals
+/**
+ * Representation of state in the graph of changes.
+ * Note: nodes are considered to be equal if they are representing the same {@Link Api}
+ * It means that two nodes could be reached by different paths but be equal at the same time. (i.e. weights for equal nodes could differ)
+ */
 public class GraphNode implements Comparable<GraphNode> {
-    private final Set<ClassInstance> api;
+    private final Api api;
 
     //These parameters actually may change
     private List<TransformOperation> transforms;
     private int weight;
 
-    public GraphNode(Set<ClassInstance> api) {
+    public GraphNode(Api api) {
         this(api, new ArrayList<>());
     }
 
-    public GraphNode(Set<ClassInstance> api, List<TransformOperation> transforms) {
-        this.api = new HashSet<>(api);
+    public GraphNode(Api api, List<TransformOperation> transforms) {
+        this.api = api;
         this.transforms = new ArrayList<>(transforms);
 
         int sum = 0;
@@ -33,8 +37,8 @@ public class GraphNode implements Comparable<GraphNode> {
         weight = sum;
     }
 
-    public Set<ClassInstance> getApi() {
-        return Collections.unmodifiableSet(api);
+    public Api getApi() {
+        return api;
     }
 
     public List<TransformOperation> getTransforms() {

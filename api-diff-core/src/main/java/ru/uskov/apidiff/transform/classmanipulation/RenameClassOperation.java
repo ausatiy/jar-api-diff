@@ -1,9 +1,6 @@
 package ru.uskov.apidiff.transform.classmanipulation;
 
-import ru.uskov.apidiff.classesmodel.ClassInstance;
-import ru.uskov.apidiff.classesmodel.ImmutableClassInstance;
-import ru.uskov.apidiff.classesmodel.ImmutableMethodInstance;
-import ru.uskov.apidiff.classesmodel.MethodInstance;
+import ru.uskov.apidiff.classesmodel.*;
 import ru.uskov.apidiff.transform.ClassManipulation;
 import ru.uskov.apidiff.transform.TransformOperation;
 
@@ -14,19 +11,20 @@ public class RenameClassOperation implements TransformOperation, ClassManipulati
     private final String from;
     private final String to;
     private final int weight;
-    private final Set<ClassInstance> newApi;
+    private final Api newApi;
     private final Map<ClassInstance, ClassInstance> modifiedClasses;
     private final Map<MethodInstance, MethodInstance> modifiedMethods;
 
-    public RenameClassOperation(Set<ClassInstance> api, String from, String to, int weight) {
+    public RenameClassOperation(Api api, String from, String to, int weight) {
         this.from = from;
         this.to = to;
         this.weight = weight;
         this.modifiedClasses = new HashMap<>();
         this.modifiedMethods = new HashMap<>();
 
-        newApi  = new HashSet<>();
-        for (ClassInstance instance : api) {
+        Api currentApi = api;
+
+        for (ClassInstance instance : api.getClasses()) {
             final ClassInstance sourceInstance = instance;
             Set<MethodInstance> newMethods = convertMethods(instance.getMethods(), from, to);
             if (! newMethods.equals(instance.getMethods())) {
@@ -46,11 +44,12 @@ public class RenameClassOperation implements TransformOperation, ClassManipulati
                 instance = ImmutableClassInstance.copyOf(instance).withName(to);
             }
 
-            newApi.add(instance);
             if (! instance.equals(sourceInstance)) {
                 modifiedClasses.put(instance, sourceInstance);
+                currentApi = currentApi.replace(sourceInstance, instance);
             }
         }
+        newApi = currentApi;
     }
     @Override
     public int getWeight() {
@@ -58,8 +57,8 @@ public class RenameClassOperation implements TransformOperation, ClassManipulati
     }
 
     @Override
-    public Set<ClassInstance> getNewApi() {
-        return Collections.unmodifiableSet(newApi);
+    public Api getNewApi() {
+        return newApi;
     }
 
     @Override

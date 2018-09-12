@@ -43,7 +43,7 @@ public class ClassParser {
      * @return set of parsed class instances
      * @throws IOException if some error occured
      */
-    public Set<ClassInstance> readClasses(File jarFile) throws IOException {
+    public Api readClasses(File jarFile) throws IOException {
         Set<ClassInstance> result = new HashSet<>();
         try (InputStream fis = new FileInputStream(jarFile)) {
             try (ZipInputStream zis = new ZipInputStream(fis)) {
@@ -61,7 +61,7 @@ public class ClassParser {
                 }
             }
         }
-        return result;
+        return new Api(result);
     }
 
     /**

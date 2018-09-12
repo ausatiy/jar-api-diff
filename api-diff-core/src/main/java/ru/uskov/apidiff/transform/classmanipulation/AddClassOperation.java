@@ -1,5 +1,6 @@
 package ru.uskov.apidiff.transform.classmanipulation;
 
+import ru.uskov.apidiff.classesmodel.Api;
 import ru.uskov.apidiff.classesmodel.ClassInstance;
 import ru.uskov.apidiff.classesmodel.MethodInstance;
 import ru.uskov.apidiff.transform.ClassManipulation;
@@ -12,13 +13,12 @@ import java.util.Set;
 public class AddClassOperation implements TransformOperation, ClassManipulation {
     private final ClassInstance clazz;
     private final int weight;
-    private final Set<ClassInstance> newApi;
+    private final Api newApi;
 
-    public AddClassOperation(Set<ClassInstance> api, ClassInstance clazz, int weight) {
+    public AddClassOperation(Api api, ClassInstance clazz, int weight) {
         this.clazz = clazz;
         this.weight = weight;
-        this.newApi = new HashSet<>(api);
-        this.newApi.add(clazz);
+        this.newApi = api.replace(null, clazz);
     }
     @Override
     public int getWeight() {
@@ -26,8 +26,8 @@ public class AddClassOperation implements TransformOperation, ClassManipulation 
     }
 
     @Override
-    public Set<ClassInstance> getNewApi() {
-        return Collections.unmodifiableSet(newApi);
+    public Api getNewApi() {
+        return newApi;
     }
 
     @Override

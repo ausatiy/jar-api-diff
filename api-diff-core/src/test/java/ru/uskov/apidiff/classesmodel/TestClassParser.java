@@ -8,10 +8,9 @@ import ru.uskov.apidiff.classesmodel.objectnaming.JavaStyleObjectNameMapper;
 import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
 
 public class TestClassParser {
-    private static Map<String, ClassInstance> classes;
+    private static Api classes;
 
     @BeforeClass
     public static void prepare() throws IOException {
@@ -85,7 +84,9 @@ public class TestClassParser {
 
         assertEquals(Visibility.PUBLIC, clazz.getVisibility());
         assertEquals("Object", clazz.getParent());
-        assertEquals(Collections.singleton("java.io.Closeable"), clazz.getInterfaces());
+        assertTrue(clazz.getInterfaces().contains("java.io.Closeable"));
+
+        assertEquals("public interface some.packagename.SomeInterface implements java.io.Closeable,java.io.Serializable", clazz.getSignature());
     }
 
     @Test

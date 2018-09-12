@@ -25,3 +25,16 @@ project(':test-resources:addRmRenameClasses') {
       main.java.srcDirs = ['java']
   }
 }
+
+project(':test-resources:demoFrom') {
+  sourceSets {
+      main.kotlin.srcDirs = ['kotlin']
+      main.java.srcDirs = ['java']
+  }
+}
+project(':test-resources:demoTo') {
+  sourceSets {
+      main.kotlin.srcDirs = ['kotlin']
+      main.java.srcDirs = ['java']
+  }
+}

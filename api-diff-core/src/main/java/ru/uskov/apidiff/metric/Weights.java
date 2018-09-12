@@ -1,5 +1,8 @@
 package ru.uskov.apidiff.metric;
 
+/**
+ * Return weights of all transforms. It is expected that it could become more usefull if A* will be used
+ */
 public class Weights {
 
     public int getRenameClassWeight() {

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TestReadInstructions {
 
-    private static Map<String, ClassInstance> classes;
+    private static Api classes;
 
     @BeforeClass
     public static void prepare() throws IOException {

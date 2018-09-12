@@ -10,12 +10,31 @@ import java.util.stream.Collectors;
 
 public class Utils {
 
-    public static Set<ClassInstance> readClassesToSet(String path, ObjectNameMapper objectNameMapper) throws IOException {
+    public static Api readClasses(String path, ObjectNameMapper objectNameMapper) throws IOException {
         final ClassParser classParser = new ClassParser(objectNameMapper);
         File file = new File(path);
         return classParser.readClasses(file);
     }
-    public static Map<String, ClassInstance> readClasses(String path, ObjectNameMapper objectNameMapper) throws IOException {
-        return readClassesToSet(path, objectNameMapper).stream().collect(Collectors.toMap(ClassInstance::getName, x -> x));
+
+    public static MethodInstance getSomeMethod() {
+        return ImmutableMethodInstance.builder()
+                .name("methodName")
+                .returnType("void")
+                .isFinal(false)
+                .isAbstract(false)
+                .isStatic(false)
+                .visibility(Visibility.PRIVATE)
+                .build();
+    }
+
+    public static ClassInstance getSomeClass() {
+        return  ImmutableClassInstance.builder()
+                .name("someName")
+                .parent("Parent")
+                .isFinal(false)
+                .isAbstract(false)
+                .isInterface(false)
+                .visibility(Visibility.PUBLIC)
+                .build();
     }
 }

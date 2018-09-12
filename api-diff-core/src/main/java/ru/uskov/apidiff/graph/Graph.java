@@ -1,51 +1,58 @@
 package ru.uskov.apidiff.graph;
 
+import ru.uskov.apidiff.classesmodel.Api;
 import ru.uskov.apidiff.classesmodel.ClassInstance;
 import ru.uskov.apidiff.transform.TransformOperation;
 
 import java.util.*;
 
+/**
+ * Graph of API changes. Each node of graph represents API obtained by some list of changes.
+ * At the moment the Dijkstra’s algorithm is used to find the easiest way to find path in the graph
+ * (to find list of changes in order to obtain required API)
+ */
 public class Graph {
 
-    private final Set<ClassInstance> initialApi;
+    private final Api initialApi;
+    private final RouteHelper.RenamePolicy renamePolicy;
 
-    public Graph(Set<ClassInstance> initialApi) {
-        this.initialApi= new HashSet<>(initialApi);
+    public Graph(Api initialApi, RouteHelper.RenamePolicy renamePolicy) {
+        this.initialApi= initialApi;
+        this.renamePolicy = renamePolicy;
     }
 
-    //TODO add progress monitor
-    //TODO in case of Dijkstra’s algorithm you should go through full graph
-    public GraphNode pathTo(Set<ClassInstance> newApi) {
+    /**
+     * Finds the "lightest" list of changes to get newApi from initialApi
+     * @param newApi the api to be obtained
+     * @return graphNode with list of changes required to get required API
+     */
+    public GraphNode pathTo(Api newApi) {
         final Set<GraphNode> openNodes = new HashSet<>();
-        final Queue<GraphNode> shellNodes = new PriorityQueue<>();
+        final Queue<GraphNode> shellNodesQueue = new PriorityQueue<>();
 
-        shellNodes.add(new GraphNode(initialApi));
-        final RouteHelper routeHelper = new RouteHelper();
+        shellNodesQueue.add(new GraphNode(initialApi));
+        final RouteHelper routeHelper = new RouteHelper(renamePolicy);
 
-        while (! shellNodes.isEmpty()) {
-            final GraphNode currentNode = shellNodes.poll();
+        while (! shellNodesQueue.isEmpty()) {
+            final GraphNode currentNode = shellNodesQueue.poll();
             if (currentNode.getApi().equals(newApi)) {
                 return currentNode;
             }
             openNodes.add(currentNode);
-            try {
-                routeHelper.getTransformOperations(currentNode, newApi);
-            } catch (Exception e) {
-                System.out.println(e);
-            }
             for (TransformOperation transformOperation : routeHelper.getTransformOperations(currentNode, newApi)) {
+                System.out.println(String.format("Checked nodes: %s, nodes to check: %s, current weight: %s.", openNodes.size(), shellNodesQueue.size(), currentNode.getWeight()));
                 GraphNode newNode = currentNode.withTransform(transformOperation);
                 if (! openNodes.contains(newNode)) {
-                    for(Iterator<GraphNode> it = shellNodes.iterator(); it.hasNext(); ) {
+                    for(Iterator<GraphNode> it = shellNodesQueue.iterator(); it.hasNext(); ) {
                         final GraphNode node = it.next();
                         if ((node.getWeight() > newNode.getWeight()) && node.equals(newNode)) {
                             // Existing node has unoptimal route
                             it.remove();
-                            shellNodes.add(newNode);
+                            shellNodesQueue.add(newNode);
                             break;
                         }
                     }
-                    shellNodes.add(newNode);
+                    shellNodesQueue.add(newNode);
                 }
             }
         }

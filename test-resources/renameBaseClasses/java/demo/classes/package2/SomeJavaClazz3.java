@@ -1,4 +1,4 @@
-package package2;
+package demo.classes.package2;
 
 public class SomeJavaClazz3 {
 

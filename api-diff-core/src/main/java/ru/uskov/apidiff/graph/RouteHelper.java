@@ -1,5 +1,6 @@
 package ru.uskov.apidiff.graph;
 
+import ru.uskov.apidiff.classesmodel.Api;
 import ru.uskov.apidiff.classesmodel.ClassInstance;
 import ru.uskov.apidiff.classesmodel.MethodInstance;
 import ru.uskov.apidiff.metric.Weights;
@@ -18,21 +19,40 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Instance should be used to obtain possible transform operations for current {@Link GraphNode}
+ * TODO: could be replaces with multiple implementations:
+ *  - dummy - allways return all possible transforms - the longest execution time, but all solutions may be found
+ *  - improved - do not return some transforms - better performance but some solutions could be lost
+ */
 public class RouteHelper {
 
     private final Weights weights;
 
     public enum RenamePolicy {
-        REMOVED_TO_ADDED, PACKAGE_MOVE
+        /**
+         * Rename of class A to B could be found only if A in not present in new api and B is not present in old api
+         */
+        REMOVED_TO_ADDED,
+        /**
+         * Only moves of classes between packages could be cound
+         */
+        PACKAGE_MOVE
     }
 
     private final RenamePolicy renamePolicy;
 
-    public RouteHelper() {
+    public RouteHelper(RenamePolicy renamePolicy) {
         weights = new Weights();
-        renamePolicy = RenamePolicy.REMOVED_TO_ADDED;
+        this.renamePolicy = renamePolicy;
     }
 
+    private String withoutPackage(String className) {
+        if (className.contains(".")) {
+            return className.substring(className.lastIndexOf('.'));
+        }
+        return className;
+    }
 
     // This is performance optimisation. We do not allow to add/remove previously added/removed classes
     private boolean classWasAddedRemovedRenamed(GraphNode node, String className) {
@@ -46,100 +66,117 @@ public class RouteHelper {
         return false;
     }
 
-    public Set<TransformOperation> getTransformOperations(GraphNode graphNode, Set<ClassInstance> newApi0) {
-        // We use sorted collection in order to compare methods in the same order
-        final Set<ClassInstance> oldApi = new HashSet<>(graphNode.getApi());
-        oldApi.removeAll(newApi0);
-
-        Set<ClassInstance> newApi = new TreeSet<>(new Comparator<ClassInstance>() {
-            @Override
-            public int compare(ClassInstance o1, ClassInstance o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
-        newApi.addAll(newApi0);
-        newApi.removeAll(graphNode.getApi());
-
+    /**
+     * Returns list of transforms to check.
+     * TODO: at the moment the method is too long and contains some unclear logics required to improve performance. It could be more simple if A* instead of Dijkstra were used in {@link Graph}
+     *
+     * The following assumptions are made:
+     * - class could be renamed from <b>not found in new api name</b> to <b>not found in old api</b>
+     * - each class could be renamed/removed/added only once.
+     * These suppositions lead to some lost solutions: A - removed, B -> renamed to A
+     *
+     * - methods could be affected only class names are the same
+     * - change attrubites of classes/methods is preferable to add/remove
+     *
+     * - methods are processed class by class. This supposition improves performance, but does not let to detect moves of static methods between classes     *
+     *
+     * @param graphNode graph node representing current state of api
+     * @param newApi api should be obtained
+     * @return list of transforms to check
+     */
+    public Set<TransformOperation> getTransformOperations(GraphNode graphNode, Api newApi) {
         final Set<TransformOperation> result = new HashSet<>();
 
-        final Map<String, ClassInstance> sourceClassesMap = oldApi.stream()
-                .collect(Collectors.toMap(x->x.getName(), x->x));
-        final Map<String, ClassInstance> destinationClassesMap = newApi.stream()
-                .collect(Collectors.toMap(x->x.getName(), x->x));
+        final List<String> newClassNames = newApi.getClassNames().stream()
+                .filter(x -> graphNode.getApi().get(x) == null)
+                .sorted()
+                .collect(Collectors.toList());
+        final List<String> removedClassNames = graphNode.getApi().getClassNames().stream()
+                .filter(x -> newApi.get(x) == null)
+                .sorted()
+                .collect(Collectors.toList());
 
-        final Set<String> classesToAdd = destinationClassesMap.keySet().stream()
-                .filter(x -> !sourceClassesMap.keySet().contains(x))
-                .filter(x->! classWasAddedRemovedRenamed(graphNode, x))
-                .collect(Collectors.toSet());
-        final Set<String> classesToRemove = sourceClassesMap.keySet().stream()
-                .filter(x -> !destinationClassesMap.keySet().contains(x))
-                .filter(x->! classWasAddedRemovedRenamed(graphNode, x))
-                .collect(Collectors.toSet());
-
-        // Add new classes
-        result.addAll(classesToAdd.stream()
-                .map(x -> new AddClassOperation(graphNode.getApi(), destinationClassesMap.get(x), weights.getAddWeight()))
-                .collect(Collectors.toSet()));
-
-        // remove classes
-        result.addAll(classesToRemove.stream()
-                .map(x -> new RemoveClassOperation(graphNode.getApi(), x, weights.getRemoveWeight()))
-                .collect(Collectors.toSet()));
-
-        //rename classes
-        for (String oldC : classesToRemove) {
-            for (String newC : classesToAdd) {
-                // If rename is limited with package changes
-                if (renamePolicy == RenamePolicy.PACKAGE_MOVE) {
-                    String oldClassName = oldC.substring(oldC.lastIndexOf('.'));
-                    String newClassName = newC.substring(newC.lastIndexOf('.'));
-                    if (!oldClassName.equals(newClassName)) {
-                        continue;
-                    }
-                }
-                result.add(new RenameClassOperation(graphNode.getApi(), oldC, newC, weights.getRenameClassWeight()));
-
+        for (String newClass : newClassNames) {
+            if (classWasAddedRemovedRenamed(graphNode, newClass)) {
+                return Collections.emptySet();// The class with the same name was alredy affected. This node could not be a solution
+            }
+        }
+        for (String newClass : removedClassNames) {
+            if (classWasAddedRemovedRenamed(graphNode, newClass)) {
+                return Collections.emptySet();// The class with the same name was alredy affected. This node could not be a solution
             }
         }
 
-        // change class attributes (visibility, abstract/final/parent class)
-        result.addAll(newApi.stream()
-                .filter(x -> sourceClassesMap.containsKey(x.getName()) && (! x.attributesEqual(sourceClassesMap.get(x.getName()))))
-                .map(x -> new ChangeClassAttributesOperation(graphNode.getApi(), x, weights.getChangeClassAttributes()))
-                .collect(Collectors.toSet()));
 
-        // we would deal with methods only when set of classes is the same
-        if (sourceClassesMap.keySet().equals(destinationClassesMap.keySet()) && (!newApi.isEmpty())) {
-            // It is performance optimisation: first we should finish with one class. You should not add transforms for all methods of all classes at once
-            ClassInstance newClass = newApi.iterator().next();
-            ClassInstance oldClass = sourceClassesMap.get(newClass.getName());
-
-            assert ! newClass.equals(oldClass);
-            // there are much less methods in class than classes in jar, thus we less care about performance
-            Set<MethodInstance> newMethods = newClass.getMethods().stream()
-                    .filter(x ->! oldClass.getMethods().contains(x))
-                    .collect(Collectors.toSet());
-            Set<MethodInstance> oldMethods = oldClass.getMethods().stream()
-                    .filter(x ->! newClass.getMethods().contains(x))
-                    .collect(Collectors.toSet());
-
-            for (MethodInstance oldMethod : oldMethods) {
-                result.add(new RemoveMethodOperation(graphNode.getApi(), oldClass, oldMethod, weights.getRemoveMethodWeight()));
-            }
-            for (MethodInstance newMethod : newMethods) {
-                result.add(new AddMethodOperation(graphNode.getApi(), oldClass, newMethod, weights.getAddMethodWeight()));
-                for (MethodInstance oldMethod : oldMethods) {
-                    if (oldMethod.getName().equals(newMethod.getName()) && oldMethod.getParameters().equals(newMethod.getParameters())) {
-                        result.add(new ChangeMethodAttributesOperation(graphNode.getApi(), oldClass, oldMethod, newMethod, weights.getChangeMethodAttributes()));
-                    }
-                    if ((! oldMethod.getName().equals(newMethod.getName())) &&
-                            oldMethod.getParameters().equals(newMethod.getParameters()) &&
-                            oldMethod.getInstructions().equals(newMethod.getInstructions())) {
-                        result.add(new RenameMethodOperation(graphNode.getApi(), oldClass, oldMethod, newMethod, weights.getRenameMethodWeight()));
-                    }
+        // Add or rename class
+        if (! newClassNames.isEmpty()) {
+            final String newClassName = newClassNames.get(0);
+            result.add(new AddClassOperation(graphNode.getApi(), newApi.get(newClassName), weights.getAddWeight()));
+            for (String oldC : removedClassNames) {
+                if (renameAllowed(oldC, newClassName)) {
+                    result.add(new RenameClassOperation(graphNode.getApi(), oldC, newClassName, weights.getRenameClassWeight()));
                 }
             }
         }
-        return result;
+
+        // Remove or rename class
+        if (! removedClassNames.isEmpty()) {
+            final String oldC = removedClassNames.get(0);
+            result.add(new RemoveClassOperation(graphNode.getApi(), oldC, weights.getRemoveWeight()));
+        }
+
+
+        // Other operations are acceptable if list of classes is the same
+        if (! result.isEmpty()) {
+            return result;
+        }
+        for (String className : newApi.getClassNames()) {
+            final ClassInstance oldClass = graphNode.getApi().get(className);
+            final ClassInstance newClass = newApi.get(className);
+            if (!oldClass.attributesEqual(newClass)) {
+                return Collections.singleton(new ChangeClassAttributesOperation(graphNode.getApi(), newClass, weights.getChangeClassAttributes()));// prevent wide search
+            }
+        }
+
+        // Lists of classes are the same, class attributes are the same. Start dealing with methods
+
+        for (String className : newApi.getClassNames()) {
+            final ClassInstance oldClass = graphNode.getApi().get(className);
+            final ClassInstance newClass = newApi.get(className);
+            if (oldClass.attributesEqual(newClass) && (!oldClass.equals(newClass))) {
+                // methods are different
+                List<MethodInstance> newMethods = newClass.getMethods().stream()
+                        .filter(x -> !oldClass.getMethods().contains(x))
+                        .sorted()
+                        .collect(Collectors.toList());
+                List<MethodInstance> oldMethods = oldClass.getMethods().stream()
+                        .filter(x -> !newClass.getMethods().contains(x))
+                        .sorted()
+                        .collect(Collectors.toList());
+
+                if (!newMethods.isEmpty()) {
+                    MethodInstance newMethod = newMethods.iterator().next();
+                    for (MethodInstance oldMethod : oldMethods) {
+                        if (oldMethod.getName().equals(newMethod.getName()) && oldMethod.getParameters().equals(newMethod.getParameters())) {
+                            return Collections.singleton(new ChangeMethodAttributesOperation(graphNode.getApi(), oldClass, oldMethod, newMethod, weights.getChangeMethodAttributes()));// it is expected that it is better to change attributes than to add/remove/rename method
+                        }
+                        if ((!oldMethod.getName().equals(newMethod.getName())) &&
+                                oldMethod.getParameters().equals(newMethod.getParameters()) &&
+                                oldMethod.getInstructions().equals(newMethod.getInstructions())) {
+                            return Collections.singleton(new RenameMethodOperation(graphNode.getApi(), oldClass, oldMethod, newMethod, weights.getRenameMethodWeight()));
+                        }
+                    }
+                    return Collections.singleton(new AddMethodOperation(graphNode.getApi(), oldClass, newMethod, weights.getAddMethodWeight()));
+                }
+                if (!oldMethods.isEmpty()) {
+                    return Collections.singleton(new RemoveMethodOperation(graphNode.getApi(), oldClass, oldMethods.iterator().next(), weights.getRemoveMethodWeight()));
+                }
+            }
+        }
+        return Collections.emptySet();
+    }
+
+    private boolean renameAllowed(String oldC, String newClassName) {
+        return (renamePolicy == RenamePolicy.REMOVED_TO_ADDED) || (withoutPackage(oldC).equals(newClassName));
     }
 }

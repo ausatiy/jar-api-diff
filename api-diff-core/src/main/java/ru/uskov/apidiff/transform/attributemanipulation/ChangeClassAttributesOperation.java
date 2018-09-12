@@ -1,9 +1,6 @@
 package ru.uskov.apidiff.transform.attributemanipulation;
 
-import ru.uskov.apidiff.classesmodel.ClassInstance;
-import ru.uskov.apidiff.classesmodel.ImmutableClassInstance;
-import ru.uskov.apidiff.classesmodel.ImmutableInstructionInstance;
-import ru.uskov.apidiff.classesmodel.MethodInstance;
+import ru.uskov.apidiff.classesmodel.*;
 import ru.uskov.apidiff.transform.TransformOperation;
 
 import java.util.Collections;
@@ -17,21 +14,14 @@ public class ChangeClassAttributesOperation implements TransformOperation {
     private final ClassInstance sourceClass;
     private final ClassInstance destinationClass;
 
-    private final Set<ClassInstance> newApi;
+    private final Api newApi;
 
-    public ChangeClassAttributesOperation(Set<ClassInstance> oldApi, ClassInstance newClass, int weight) {
+    public ChangeClassAttributesOperation(Api oldApi, ClassInstance newClass, int weight) {
         this.weight = weight;
-        final String className = newClass.getName();
-        Optional<ClassInstance> sourceClass = oldApi.stream().filter(x -> x.getName().equals(className)).findAny();
-        if (! sourceClass.isPresent()) {
-            throw new IllegalStateException();//TODO
-        }
-        this.sourceClass = sourceClass.get();
+        this.sourceClass = oldApi.get(newClass.getName());
         newClass = ImmutableClassInstance.copyOf(newClass).withMethods(this.sourceClass.getMethods());
         this.destinationClass = newClass;
-        this.newApi = new HashSet<>(oldApi);
-        this.newApi.remove(this.sourceClass);
-        this.newApi.add(newClass);
+        this.newApi = oldApi.replace(this.sourceClass, newClass);
     }
 
 
@@ -41,8 +31,8 @@ public class ChangeClassAttributesOperation implements TransformOperation {
     }
 
     @Override
-    public Set<ClassInstance> getNewApi() {
-        return Collections.unmodifiableSet(newApi);
+    public Api getNewApi() {
+        return newApi;
     }
 
     @Override
@@ -57,6 +47,6 @@ public class ChangeClassAttributesOperation implements TransformOperation {
 
     @Override
     public String toString() {
-        return String.format("Class signature changed from %s to %s", sourceClass.getSignature(), destinationClass.getSignature());
+        return String.format("Class signature changed from \"%s\" to \"%s\".", sourceClass.getSignature(), destinationClass.getSignature());
     }
 }

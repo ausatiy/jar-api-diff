@@ -1,6 +1,6 @@
-package package2;
+package demo.classes.package2;
 
-public class SomeJavaClazz2 {
+final class SomeJavaClazz2 {
     public int publicField;
     public static Integer publicStaticField;
 

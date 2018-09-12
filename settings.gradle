@@ -2,8 +2,9 @@ include 'test-resources:parseCases'
 include 'test-resources:baseClasses'
 include 'test-resources:renameBaseClasses'
 include 'test-resources:addRmRenameClasses'
+include 'test-resources:demoFrom'
+include 'test-resources:demoTo'
 include 'api-diff-core'
-include 'outputs'
 include 'launcher'
 
 

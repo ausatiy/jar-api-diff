@@ -1,5 +1,6 @@
 package ru.uskov.apidiff.transform.classmanipulation;
 
+import ru.uskov.apidiff.classesmodel.Api;
 import ru.uskov.apidiff.classesmodel.ClassInstance;
 import ru.uskov.apidiff.classesmodel.MethodInstance;
 import ru.uskov.apidiff.transform.ClassManipulation;
@@ -12,12 +13,12 @@ import java.util.stream.Collectors;
 public class RemoveClassOperation implements TransformOperation, ClassManipulation {
     private final String className;
     private final int weight;
-    private final Set<ClassInstance> newApi;
+    private final Api newApi;
 
-    public RemoveClassOperation(Set<ClassInstance> api, String className, int weight) {
+    public RemoveClassOperation(Api api, String className, int weight) {
         this.className = className;
         this.weight = weight;
-        this.newApi = api.stream().filter(x -> !(x.getName().equals(className))).collect(Collectors.toSet());
+        this.newApi = api.removeClassByName(className);
     }
     @Override
     public int getWeight() {
@@ -25,8 +26,8 @@ public class RemoveClassOperation implements TransformOperation, ClassManipulati
     }
 
     @Override
-    public Set<ClassInstance> getNewApi() {
-        return Collections.unmodifiableSet(newApi);
+    public Api getNewApi() {
+        return newApi;
     }
 
     @Override
