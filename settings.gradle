@@ -4,6 +4,7 @@ include 'test-resources:renameBaseClasses'
 include 'test-resources:addRmRenameClasses'
 include 'test-resources:demoFrom'
 include 'test-resources:demoTo'
+include 'classes-model'
 include 'api-diff-core'
 include 'launcher'
 

@@ -1,19 +1,12 @@
-apply plugin: 'java'
-apply plugin: 'maven-publish'
-
 dependencies {
     compileOnly 'org.immutables:value:2.6.3'
     compile "org.ow2.asm:asm:6.2.1"
     compile "org.ow2.asm:asm-util:6.2.1"
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'ru.uskov.apidiff'
-            artifactId = 'classesmodel'
-            version = '1.0'
-            from components.java
-        }
+  idea {
+    module {
+      sourceDirs += file('build/classes/java/main')
+      generatedSourceDirs += file('build/classes/java/main')
     }
-}
+  }

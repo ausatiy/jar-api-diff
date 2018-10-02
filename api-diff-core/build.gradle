@@ -1,5 +1,5 @@
 dependencies {
-  compile "ru.uskov.apidiff:classesmodel:1.0"
+  compile project(':classes-model')
 
   compile "commons-cli:commons-cli:1.4"
   compile "org.ow2.asm:asm:6.2.1"
